@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\OrderPhoto;
+use Illuminate\Support\Facades\Storage;
 
 class OrderAdminController extends Controller
 {
@@ -122,5 +124,24 @@ class OrderAdminController extends Controller
             'message' => 'Pembayaran berhasil diupdate',
             'data' => $order->load('service'),
         ]);
+    }
+
+
+    public function uploadPhoto(Request $request, Order $order)
+    {
+        $request->validate([
+            'photo' => ['required', 'image', 'max:2048'],
+        ]);
+
+        $path = $request->file('photo')->store('orders', 'public');
+
+        $photo = $order->photos()->create([
+            'photo_path' => $path,
+        ]);
+
+        return response()->json([
+            'message' => 'Foto berhasil diupload',
+            'data' => $photo,
+        ], 201);
     }
 }

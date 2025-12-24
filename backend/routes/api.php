@@ -31,4 +31,5 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/orders/{order}', [OrderAdminController::class, 'show']);
     Route::patch('/orders/{order}/status', [OrderAdminController::class, 'updateStatus']);
     Route::patch('/orders/{order}/payment', [OrderAdminController::class, 'updatePayment']);
+    Route::post('/orders/{order}/photos', [OrderAdminController::class, 'uploadPhoto']);
 });
