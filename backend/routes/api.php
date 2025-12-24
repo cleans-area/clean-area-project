@@ -29,4 +29,5 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/orders', [OrderAdminController::class, 'index']);
     Route::post('/orders', [OrderAdminController::class, 'store']);
     Route::get('/orders/{order}', [OrderAdminController::class, 'show']);
+    Route::patch('/orders/{order}/status', [OrderAdminController::class, 'updateStatus']);
 });

@@ -28,11 +28,10 @@ class OrderPublicController extends Controller
 
     public function track(string $ticket_code)
     {
-        $order = Order::with(['service', 'photos'])
+        $order = Order::with('service')
             ->where('ticket_code', $ticket_code)
             ->firstOrFail();
 
-        // tetap aman, tidak tampilkan data sensitif
         return response()->json([
             'data' => [
                 'ticket_code' => $order->ticket_code,
@@ -40,7 +39,6 @@ class OrderPublicController extends Controller
                 'order_status' => $order->order_status,
                 'payment_status' => $order->payment_status,
                 'admin_note' => $order->admin_note,
-                'photos' => $order->photos->map(fn($p) => $p->photo_path),
                 'created_at' => $order->created_at,
             ]
         ]);

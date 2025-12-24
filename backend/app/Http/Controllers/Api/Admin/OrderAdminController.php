@@ -71,7 +71,7 @@ class OrderAdminController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['service', 'photos']);
+        $order->load(['service']);
         return response()->json(['data' => $order]);
     }
 
@@ -79,5 +79,22 @@ class OrderAdminController extends Controller
     {
         // contoh: CA-7F3A92
         return 'CA-' . strtoupper(Str::random(6));
+    }
+
+    public function updateStatus(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'order_status' => ['required', 'string'],
+        ]);
+
+        // kalau kamu pakai Enum PHP native, kita bisa validasi lebih strict nanti
+        $order->update([
+            'order_status' => $data['order_status'],
+        ]);
+
+        return response()->json([
+            'message' => 'Status order berhasil diupdate',
+            'data' => $order->load('service'),
+        ]);
     }
 }
