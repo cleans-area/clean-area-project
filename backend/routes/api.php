@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\OrderAdminController;
 use App\Http\Controllers\Api\Admin\ServiceAdminController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Public\OrderPublicController;
 use App\Http\Controllers\Api\Public\ServicePublicController;
 use Illuminate\Support\Facades\Route;
 
@@ -9,6 +11,10 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Public
 Route::get('/services', [ServicePublicController::class, 'index']);
+
+// Public List Ticket
+Route::get('/orders/public', [OrderPublicController::class, 'index']);
+Route::get('/orders/track/{ticket_code}', [OrderPublicController::class, 'track']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -20,4 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Admin Services
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::apiResource('services', ServiceAdminController::class);
+    Route::get('/orders', [OrderAdminController::class, 'index']);
+    Route::post('/orders', [OrderAdminController::class, 'store']);
+    Route::get('/orders/{order}', [OrderAdminController::class, 'show']);
 });
