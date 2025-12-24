@@ -97,4 +97,30 @@ class OrderAdminController extends Controller
             'data' => $order->load('service'),
         ]);
     }
+
+    public function updatePayment(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'price' => ['required', 'numeric', 'min:0'],
+            'amount_paid' => ['required', 'numeric', 'min:0'],
+            'payment_method' => ['required', 'string'],
+        ]);
+
+        $remaining = $data['price'] - $data['amount_paid'];
+
+        $paymentStatus = $remaining <= 0 ? 'paid' : 'dp';
+
+        $order->update([
+            'price' => $data['price'],
+            'amount_paid' => $data['amount_paid'],
+            'remaining_amount' => max(0, $remaining),
+            'payment_status' => $paymentStatus,
+            'payment_method' => $data['payment_method'],
+        ]);
+
+        return response()->json([
+            'message' => 'Pembayaran berhasil diupdate',
+            'data' => $order->load('service'),
+        ]);
+    }
 }
