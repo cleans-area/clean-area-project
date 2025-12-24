@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use Illuminate\Support\Facades\Storage;
 
 class OrderPublicController extends Controller
 {
@@ -40,6 +41,10 @@ class OrderPublicController extends Controller
                 'payment_status' => $order->payment_status,
                 'admin_note' => $order->admin_note,
                 'created_at' => $order->created_at,
+                'photos' => $order->photos->map(fn($p) => [
+                    'id' => $p->id,
+                    'url' => asset('storage/' . $p->photo_path),
+                ]),
             ]
         ]);
     }

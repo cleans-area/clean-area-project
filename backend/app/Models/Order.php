@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 // app/Models/Order.php
 class Order extends Model
@@ -30,5 +31,16 @@ class Order extends Model
     public function photos()
     {
         return $this->hasMany(OrderPhoto::class);
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($order) {
+            foreach ($order->photos as $photo) {
+                if ($photo->photo_path && Storage::disk('public')->exists($photo->photo_path)) {
+                    Storage::disk('public')->delete($photo->photo_path);
+                }
+            }
+        });
     }
 }

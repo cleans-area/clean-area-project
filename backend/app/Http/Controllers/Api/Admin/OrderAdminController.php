@@ -127,21 +127,43 @@ class OrderAdminController extends Controller
     }
 
 
-    public function uploadPhoto(Request $request, Order $order)
+
+    public function uploadPhotos(Request $request, Order $order)
     {
-        $request->validate([
-            'photo' => ['required', 'image', 'max:2048'],
+        $data = $request->validate([
+            'photos' => ['required', 'array', 'min:1'],
+            'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
-        $path = $request->file('photo')->store('orders', 'public');
+        $saved = [];
 
-        $photo = $order->photos()->create([
-            'photo_path' => $path,
-        ]);
+        foreach ($data['photos'] as $file) {
+            $path = $file->store('orders', 'public');
+
+            $photo = OrderPhoto::create([
+                'order_id' => $order->id,
+                'photo_path' => $path,
+            ]);
+
+            $saved[] = [
+                'id' => $photo->id,
+                'photo_path' => $photo->photo_path,
+                'url' => asset('storage/' . $photo->photo_path),
+            ];
+        }
 
         return response()->json([
             'message' => 'Foto berhasil diupload',
-            'data' => $photo,
+            'data' => $saved,
         ], 201);
+    }
+
+    public function destroy(Order $order)
+    {
+        $order->delete();
+
+        return response()->json([
+            'message' => 'Order berhasil dihapus',
+        ]);
     }
 }
