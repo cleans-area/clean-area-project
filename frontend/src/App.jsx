@@ -1,26 +1,24 @@
-import { Routes, Route, Navigate, Link } from "react-router-dom";
-import TrackPage from "./pages/TrackPage";
-import './App.css'
-
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import AdminLogin from "./pages/admin/Login";
+import AdminDashboard from "./pages/admin/Dashboard";
+import RequireAdmin from "./components/admin/RequireAdmin";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-800">
-        <div className="mx-auto max-w-3xl px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="font-semibold">Clean-Area</Link>
-          <nav className="text-sm text-slate-300">
-            <Link className="hover:text-white" to="/track">Track</Link>
-          </nav>
-        </div>
-      </header>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/track" />} />
 
-      <main className="mx-auto max-w-3xl px-4 py-6">
-        <Routes>
-          <Route path="/" element={<Navigate to="/track" replace />} />
-          <Route path="/track" element={<TrackPage />} />
-        </Routes>
-      </main>
-    </div>
+        {/* ADMIN */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* protected admin routes */}
+        <Route element={<RequireAdmin />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        </Route>
+
+        <Route path="*" element={<div>404 Not Found</div>} />
+      </Routes>
+    </BrowserRouter>
   );
 }

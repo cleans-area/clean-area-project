@@ -1,13 +1,23 @@
+import axios from "axios";
+
 const BASE = import.meta.env.VITE_API_BASE_URL;
 
-export async function apiGet(path) {
-  const res = await fetch(`${BASE}${path}`);
-  const data = await res.json().catch(() => ({}));
+const api = axios.create({
+  baseURL: BASE,
+  headers: {
+    Accept: "application/json",
+  },
+});
 
-  if (!res.ok) {
-    const msg = data?.message || `Request failed (${res.status})`;
-    throw new Error(msg);
+// otomatis inject token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
+});
 
-  return data;
-}
+
+
+export default api;
