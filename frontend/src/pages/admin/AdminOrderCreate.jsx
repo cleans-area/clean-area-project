@@ -18,7 +18,7 @@ export default function AdminOrderCreate() {
     customer_address: "",
     price: "",
     amount_paid: 0,
-    payment_method: "CASH",
+    payment_mekthod: "CASH",
     admin_note: "",
   });
 

@@ -8,12 +8,18 @@ import AdminOrders from "./pages/admin/Orders";
 import AdminOrderDetail from "./pages/admin/OrderDetail";
 import AdminOrderCreate from "./pages/admin/AdminOrderCreate";
 
+import PublicLayout from "./components/public/PublicLayout";
+import Home from "./pages/public/Home";
+import About from "./pages/public/About";
+import ServicesPublic from "./pages/public/Services";
+import Location from "./pages/public/Location";
+import Promo from "./pages/public/Promo";
+
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/track" />} />
-
         {/* ADMIN LOGIN (Tanpa Layout) */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
@@ -26,9 +32,17 @@ export default function App() {
             <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="/admin/orders/:id" element={<AdminOrderDetail />} />
             <Route path="/admin/orders/create" element={<AdminOrderCreate />} />
-
           </Route>
         </Route>
+
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/tentang" element={<About />} />
+          <Route path="/layanan" element={<ServicesPublic />} />
+          <Route path="/lokasi" element={<Location />} />
+          <Route path="/promo" element={<Promo />} />
+        </Route>
+
 
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
