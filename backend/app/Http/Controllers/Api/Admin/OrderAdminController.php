@@ -73,8 +73,14 @@ class OrderAdminController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['service']);
-        return response()->json(['data' => $order]);
+        $order->load([
+            'service',
+            'photos' // ⬅️ INI KUNCI UTAMA
+        ]);
+
+        return response()->json([
+            'data' => $order
+        ]);
     }
 
     private function generateTicketCode(): string
@@ -164,6 +170,36 @@ class OrderAdminController extends Controller
 
         return response()->json([
             'message' => 'Order berhasil dihapus',
+        ]);
+    }
+    public function updateNote(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'admin_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $order->update([
+            'admin_note' => $data['admin_note'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Catatan admin berhasil diupdate',
+            'data' => $order->load('service'),
+        ]);
+    }
+
+    public function destroyPhoto(OrderPhoto $photo)
+    {
+        // hapus file fisik
+        if ($photo->photo_path && Storage::disk('public')->exists($photo->photo_path)) {
+            Storage::disk('public')->delete($photo->photo_path);
+        }
+
+        // hapus DB
+        $photo->delete();
+
+        return response()->json([
+            'message' => 'Foto berhasil dihapus'
         ]);
     }
 }

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// app/Models/OrderPhoto.php
 class OrderPhoto extends Model
 {
     protected $fillable = [
@@ -12,8 +11,17 @@ class OrderPhoto extends Model
         'photo_path',
     ];
 
+    // ⬇️ PENTING
+    protected $appends = ['url'];
+
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    // ⬇️ PENTING
+    public function getUrlAttribute()
+    {
+        return asset('storage/' . $this->photo_path);
     }
 }

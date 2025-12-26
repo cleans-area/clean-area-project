@@ -34,4 +34,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::patch('/orders/{order}/payment', [OrderAdminController::class, 'updatePayment']);
     Route::post('/orders/{order}/photos', [OrderAdminController::class, 'uploadPhotos']);
     Route::delete('/orders/{order}', [OrderAdminController::class, 'destroy']);
+    Route::patch('/orders/{order}/note', [OrderAdminController::class, 'updateNote']);
+    Route::delete(
+        '/order-photos/{photo}',
+        [OrderAdminController::class, 'destroyPhoto']
+    );
 });
