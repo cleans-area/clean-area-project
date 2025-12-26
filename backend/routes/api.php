@@ -39,4 +39,5 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         '/order-photos/{photo}',
         [OrderAdminController::class, 'destroyPhoto']
     );
+    Route::patch('/orders/{order}/customer', [OrderAdminController::class, 'updateCustomer']);
 });

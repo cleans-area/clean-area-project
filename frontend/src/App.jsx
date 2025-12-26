@@ -6,6 +6,7 @@ import AdminServices from "./pages/admin/Services";
 import AdminLayout from "./components/admin/AdminLayout"; // <--- Import ini
 import AdminOrders from "./pages/admin/Orders";
 import AdminOrderDetail from "./pages/admin/OrderDetail";
+import AdminOrderCreate from "./pages/admin/AdminOrderCreate";
 
 export default function App() {
   return (
@@ -24,7 +25,7 @@ export default function App() {
             <Route path="/admin/services" element={<AdminServices />} />
             <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="/admin/orders/:id" element={<AdminOrderDetail />} />
-            {/* <Route path="/admin/orders/create" element={<AdminOrderCreate />} /> */}
+            <Route path="/admin/orders/create" element={<AdminOrderCreate />} />
 
           </Route>
         </Route>

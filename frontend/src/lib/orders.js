@@ -65,3 +65,15 @@ export function deleteOrderPhoto(photoId) {
   return api.delete(`/admin/order-photos/${photoId}`);
 }
 
+export function deleteOrder(id) {
+  return api.delete(`/admin/orders/${id}`);
+}
+
+
+export function fetchDashboardStats() {
+  return api.get("/admin/dashboard-stats");
+}
+
+export async function updateOrderCustomer(orderId, payload) {
+  return api.patch(`/admin/orders/${orderId}/customer`, payload);
+}

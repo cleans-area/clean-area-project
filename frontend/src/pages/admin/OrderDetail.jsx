@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// Perbaikan: Tambahkan deleteOrderPhoto ke daftar import
 import { 
   fetchOrderDetail, 
   updateOrderStatus, 
   updateOrderPayment, 
   updateOrderNote, 
   uploadOrderPhotos,
-  deleteOrderPhoto 
+  deleteOrderPhoto,
+  deleteOrder,
+  updateOrderCustomer // Import fungsi API baru
 } from "../../lib/orders";
-// Perbaikan: Tambahkan Trash2 ke daftar import lucide-react
 import { 
   ChevronLeft, User, CreditCard, Save, 
   Image as ImageIcon, MessageSquare, Upload, X, Trash2 
@@ -25,6 +25,14 @@ export default function AdminOrderDetail() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // State Draft Customer
+  const [customerDraft, setCustomerDraft] = useState({
+    customer_name: "",
+    customer_phone: "",
+    customer_address: "",
+  });
+  const [savingCustomer, setSavingCustomer] = useState(false);
 
   const [statusDraft, setStatusDraft] = useState("");
   const [savingStatus, setSavingStatus] = useState(false);
@@ -43,6 +51,13 @@ export default function AdminOrderDetail() {
       const data = res.data;
       setOrder(data);
       
+      // Sinkronisasi data customer ke draft
+      setCustomerDraft({
+        customer_name: data.customer_name || "",
+        customer_phone: data.customer_phone || "",
+        customer_address: data.customer_address || "",
+      });
+
       setStatusDraft(data.order_status);
       setNoteDraft(data.admin_note || "");
       setPaymentDraft({
@@ -61,13 +76,47 @@ export default function AdminOrderDetail() {
     load();
   }, [id]);
 
-  // Handler Hapus Foto (Step 5)
+  // Handler Save Customer
+  async function handleSaveCustomer() {
+    try {
+      setSavingCustomer(true);
+      await updateOrderCustomer(order.id, customerDraft);
+      await load();
+      alert("Data customer berhasil diperbarui!");
+    } catch (e) {
+      alert(e.response?.data?.message || "Gagal update data customer");
+    } finally {
+      setSavingCustomer(false);
+    }
+  }
+
+  // Helper deteksi perubahan customer
+  const isCustomerUnchanged = 
+    order &&
+    customerDraft.customer_name === order.customer_name &&
+    customerDraft.customer_phone === order.customer_phone &&
+    (customerDraft.customer_address || "") === (order.customer_address || "");
+
+  async function handleDeleteThisOrder() {
+    const ok = window.confirm(
+      `Yakin hapus order ${order.ticket_code}?\nFoto order juga akan terhapus.`
+    );
+    if (!ok) return;
+
+    try {
+      await deleteOrder(order.id);
+      alert("Order berhasil dihapus.");
+      navigate("/admin/orders");
+    } catch (e) {
+      alert(e.response?.data?.message || "Gagal hapus order");
+    }
+  }
+
   async function handleDeletePhoto(photoId) {
     if (!confirm("Hapus foto ini secara permanen?")) return;
-    
     try {
-      await deleteOrderPhoto(photoId); //
-      await load(); //
+      await deleteOrderPhoto(photoId);
+      await load();
       alert("Foto berhasil dihapus");
     } catch (e) {
       alert(e.response?.data?.message || "Gagal menghapus foto");
@@ -141,22 +190,52 @@ export default function AdminOrderDetail() {
             </h2>
           </div>
         </div>
+
+        <button
+          onClick={handleDeleteThisOrder}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/15 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all text-xs font-bold"
+        >
+          <Trash2 size={16} />
+          Hapus Order
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           
-          {/* 1. Customer Info */}
+          {/* 1. Customer Info Editable */}
           <section>
-            <div className="flex items-center gap-2 mb-4 text-white/50 px-2">
-              <User size={18} />
-              <h3 className="font-bold text-sm uppercase tracking-widest">Customer Info</h3>
+            <div className="flex items-center justify-between mb-4 px-2">
+              <div className="flex items-center gap-2 text-white/50">
+                <User size={18} />
+                <h3 className="font-bold text-sm uppercase tracking-widest">Customer Info</h3>
+              </div>
+              <button 
+                onClick={handleSaveCustomer}
+                disabled={savingCustomer || isCustomerUnchanged}
+                className="text-[10px] font-bold uppercase tracking-widest bg-white/10 border border-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/20 disabled:opacity-30 transition-all"
+              >
+                {savingCustomer ? "Saving..." : "Simpan Customer"}
+              </button>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Info label="Nama Customer" value={order.customer_name} />
-              <Info label="No. HP" value={order.customer_phone} />
+              <Input 
+                label="Nama Customer" 
+                value={customerDraft.customer_name} 
+                onChange={(e) => setCustomerDraft({ ...customerDraft, customer_name: e.target.value })}
+              />
+              <Input 
+                label="No. HP / WhatsApp" 
+                value={customerDraft.customer_phone} 
+                onChange={(e) => setCustomerDraft({ ...customerDraft, customer_phone: e.target.value })}
+              />
               <div className="md:col-span-2">
-                <Info label="Alamat Lengkap" value={order.customer_address} />
+                <Textarea 
+                  label="Alamat Lengkap" 
+                  value={customerDraft.customer_address} 
+                  onChange={(e) => setCustomerDraft({ ...customerDraft, customer_address: e.target.value })}
+                />
               </div>
             </div>
           </section>
@@ -273,7 +352,6 @@ export default function AdminOrderDetail() {
             <h3 className="font-bold text-sm uppercase tracking-widest">Photos</h3>
           </div>
 
-          {/* Upload Box */}
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 shadow-lg space-y-4">
             <label className="block text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2 ml-1">Upload Baru</label>
             <input
@@ -284,7 +362,6 @@ export default function AdminOrderDetail() {
               className="block w-full text-xs text-white/40 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-white/10 file:text-white hover:file:bg-white/20 transition-all cursor-pointer"
             />
 
-            {/* Preview Section - Foto yang baru dipilih */}
             {selectedFiles.length > 0 && (
               <div className="grid grid-cols-2 gap-3 mt-4">
                 {selectedFiles.map((file, i) => (
@@ -314,7 +391,6 @@ export default function AdminOrderDetail() {
             </button>
           </div>
 
-          {/* Existing Photos List - Update dengan tombol Hapus (Step 5) */}
           <div className="grid grid-cols-2 gap-4">
             {order.photos?.map((p) => (
               <div key={p.id} className="aspect-square rounded-2xl overflow-hidden border border-white/10 shadow-xl group relative bg-black/20">
@@ -326,8 +402,6 @@ export default function AdminOrderDetail() {
                      e.target.src = "https://placehold.co/400x400/184832/white?text=Image+Not+Found";
                    }}
                 />
-                
-                {/* Overlay: Muncul saat di-hover (Step 5) */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                   <a 
                     href={p.url} 
@@ -337,8 +411,6 @@ export default function AdminOrderDetail() {
                   >
                     View Full
                   </a>
-                  
-                  {/* Tombol Hapus (Step 5) */}
                   <button
                     onClick={() => handleDeletePhoto(p.id)}
                     className="w-3/4 py-1 flex items-center justify-center gap-1 font-bold text-[10px] uppercase text-white bg-red-600/60 hover:bg-red-600 rounded backdrop-blur-md transition-all"
@@ -358,6 +430,36 @@ export default function AdminOrderDetail() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// Komponen Input & Textarea Khusus agar seragam
+function Input({ label, ...props }) {
+  return (
+    <div className="bg-white/5 border border-white/10 p-4 rounded-2xl shadow-lg">
+      <p className="text-[10px] text-white/30 mb-1 uppercase font-black tracking-widest">
+        {label}
+      </p>
+      <input
+        {...props}
+        className="w-full bg-transparent text-white outline-none text-sm font-medium"
+      />
+    </div>
+  );
+}
+
+function Textarea({ label, ...props }) {
+  return (
+    <div className="bg-white/5 border border-white/10 p-4 rounded-2xl shadow-lg">
+      <p className="text-[10px] text-white/30 mb-1 uppercase font-black tracking-widest">
+        {label}
+      </p>
+      <textarea
+        {...props}
+        rows={3}
+        className="w-full bg-transparent text-white outline-none text-sm resize-none font-medium leading-relaxed"
+      />
     </div>
   );
 }

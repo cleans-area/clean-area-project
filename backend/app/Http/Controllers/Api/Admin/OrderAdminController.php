@@ -202,4 +202,24 @@ class OrderAdminController extends Controller
             'message' => 'Foto berhasil dihapus'
         ]);
     }
+
+    public function updateCustomer(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'customer_name' => ['required', 'string', 'max:120'],
+            'customer_phone' => ['required', 'string', 'max:30'],
+            'customer_address' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $order->update([
+            'customer_name' => $data['customer_name'],
+            'customer_phone' => $data['customer_phone'],
+            'customer_address' => $data['customer_address'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Data customer berhasil diperbarui',
+            'data' => $order->load(['service', 'photos']),
+        ]);
+    }
 }
